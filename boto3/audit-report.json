@@ -1,0 +1,426 @@
+[
+  {
+    "control_id": "2.4",
+    "title": "Root account has no access key",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "PASS",
+    "severity": "MEDIUM",
+    "evidence": {
+      "active_root_access_keys": []
+    },
+    "message": "Root has no active access keys.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:30.171956+00:00"
+  },
+  {
+    "control_id": "2.5",
+    "title": "Root account has MFA enabled",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "FAIL",
+    "severity": "HIGH",
+    "evidence": {
+      "mfa_active": "false"
+    },
+    "message": "Root MFA is not enabled.",
+    "remediation": "Enable MFA for the root account manually.",
+    "checked_at": "2026-11-09T12:49:30.171974+00:00"
+  },
+  {
+    "control_id": "2.10",
+    "title": "IAM console users have MFA",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "NOT_APPLICABLE",
+    "severity": "MEDIUM",
+    "evidence": {
+      "console_user_count": 0
+    },
+    "message": "No IAM users with console passwords were found.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:30.171981+00:00"
+  },
+  {
+    "control_id": "2.11",
+    "title": "Unused credentials are disabled after 45 days",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "PASS",
+    "severity": "MEDIUM",
+    "evidence": {
+      "age_days": 45,
+      "violations": []
+    },
+    "message": "No stale active credentials were found.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:30.171994+00:00"
+  },
+  {
+    "control_id": "2.12",
+    "title": "Access keys rotate within 90 days",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "NOT_APPLICABLE",
+    "severity": "MEDIUM",
+    "evidence": {
+      "active_key_count": 0
+    },
+    "message": "No active IAM access keys were found.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:30.172004+00:00"
+  },
+  {
+    "control_id": "2.8",
+    "title": "IAM password policy requires at least 14 characters",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "FAIL",
+    "severity": "MEDIUM",
+    "evidence": {
+      "password_policy": "not_found"
+    },
+    "message": "No IAM password policy exists.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:30.454696+00:00"
+  },
+  {
+    "control_id": "2.9",
+    "title": "IAM password policy prevents password reuse",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "FAIL",
+    "severity": "MEDIUM",
+    "evidence": {
+      "password_policy": "not_found"
+    },
+    "message": "No IAM password policy exists.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:30.454712+00:00"
+  },
+  {
+    "control_id": "2.7",
+    "title": "Root is not used for daily or administrative work",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "MANUAL",
+    "severity": "MEDIUM",
+    "evidence": {
+      "lookback_days": 90,
+      "root_event_count": 0,
+      "event_names": []
+    },
+    "message": "Review CloudTrail root activity and decide whether each event was approved.",
+    "remediation": "Stop routine root use and document any approved break-glass use.",
+    "checked_at": "2026-11-09T12:49:31.388395+00:00"
+  },
+  {
+    "control_id": "2.13",
+    "title": "IAM users receive permissions through groups",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "NOT_APPLICABLE",
+    "severity": "MEDIUM",
+    "evidence": {
+      "user_count": 0
+    },
+    "message": "No IAM users were found.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:31.674965+00:00"
+  },
+  {
+    "control_id": "2.14",
+    "title": "No IAM policy grants unrestricted *:* access",
+    "service": "IAM",
+    "region": "global",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "ClientError",
+      "error": "An error occurred (AccessDenied) when calling the ListRolePolicies operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: iam:ListRolePolicies on resource: role vocareum with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-4k9hyl7p. Go to https://us-east-1.console.aws.amazon.com/iam/home?region=us-east-1#/authorization-details/aw0k2lgtn4np994edfa3k1lq3 for complete details, or call the GetRequestAuthorizationDetails API with the following authorization id: aw0k2lgtn4np994edfa3k1lq3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:45.652430+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ap-south-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-south-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:48.737544+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "eu-north-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-north-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:50.718112+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "eu-west-3",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-west-3:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:54.162417+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "eu-west-2",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-west-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:55.449003+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "eu-west-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-west-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:49:58.351461+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ap-northeast-3",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-northeast-3:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:00.829660+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ap-northeast-2",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-northeast-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:02.414037+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ap-northeast-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-northeast-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:03.306598+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ca-central-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ca-central-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:04.701351+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "sa-east-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:sa-east-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:06.449792+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ap-southeast-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-southeast-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:07.063289+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "ap-southeast-2",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-southeast-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:11.079365+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "eu-central-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-central-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:15.129570+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "us-east-1",
+    "resource_id": "account",
+    "status": "FAIL",
+    "severity": "MEDIUM",
+    "evidence": {
+      "analyzers": []
+    },
+    "message": "No active Access Analyzer exists in this Region.",
+    "remediation": "Create and activate an account Access Analyzer after approval.",
+    "checked_at": "2026-11-09T12:50:16.456591+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "us-east-2",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:us-east-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:20.131968+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "us-west-1",
+    "resource_id": "account",
+    "status": "ERROR",
+    "severity": "MEDIUM",
+    "evidence": {
+      "error_type": "AccessDeniedException",
+      "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:us-west-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"
+    },
+    "message": "The control could not be checked.",
+    "remediation": null,
+    "checked_at": "2026-11-09T12:50:23.728235+00:00"
+  },
+  {
+    "control_id": "2.18",
+    "title": "IAM External Access Analyzer is active in every enabled Region",
+    "service": "IAM",
+    "region": "us-west-2",
+    "resource_id": "account",
+    "status": "FAIL",
+    "severity": "MEDIUM",
+    "evidence": {
+      "analyzers": []
+    },
+    "message": "No active Access Analyzer exists in this Region.",
+    "remediation": "Create and activate an account Access Analyzer after approval.",
+    "checked_at": "2026-11-09T12:50:24.891958+00:00"
+  }
+]
