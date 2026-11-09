@@ -1,0 +1,29 @@
+
+# Copy to terraform.tfvars and replace the values before planning.
+# Do not commit terraform.tfvars.
+aws_region  = "us-east-1"
+project_name = "cis-security"
+
+# Your current public IPv4 address with /32. Never use 0.0.0.0/0 for bastion SSH.
+admin_cidr = "198.51.100.10/32"
+
+# Existing EC2 key pair name in us-east-1.
+key_name = "replace-with-existing-key-pair-name"
+
+instance_type      = "t3.micro"
+db_instance_class  = "db.t3.micro"
+enable_multi_az    = true
+deletion_protection = false
+
+# null lets AWS choose a supported MySQL version and AWS-managed encryption key.
+db_engine_version = null
+db_parameter_group_family = "mysql8.4"
+rds_kms_key_id    = null
+
+# Learner Lab-compatible monitoring: CloudTrail and VPC Flow Logs write to S3.
+# Python parses CloudTrail objects instead of relying on CloudWatch Logs integration.
+cloudtrail_kms_key_id         = null
+enable_cloudtrail             = true
+enable_vpc_flow_logs          = true
+manage_security_hub           = false
+enable_operational_monitoring = true
