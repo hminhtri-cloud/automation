@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS IAM Security Audit Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#151f33',
+              900: '#0f172a',
+              950: '#090d16'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    pre code {
+      font-family: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-gradient-to-tr from-indigo-600 to-amber-500 rounded-lg text-white shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-shield-halved text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">AWS IAM Security Audit</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">CIS Benchmark</span>
+          </div>
+          <p class="text-xs text-slate-400">Read-only IAM & Access Analyzer Evaluation</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="window.print()" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-print"></i> <span>Print / PDF</span>
+        </button>
+        <button onclick="exportJSON()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white transition flex items-center gap-1.5 shadow-md shadow-indigo-600/30">
+          <i class="fa-solid fa-download"></i> <span>Export JSON</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- Total -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition">
+        <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>Total Checks</span>
+          <i class="fa-solid fa-list-check text-slate-500"></i>
+        </div>
+        <div class="text-2xl font-extrabold text-white" id="kpi-total">27</div>
+        <div class="text-xs text-slate-500 mt-1">10 Global + 17 Regions</div>
+      </div>
+
+      <!-- Compliance Score -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition">
+        <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>Pass Rate</span>
+          <i class="fa-solid fa-chart-pie text-sky-400"></i>
+        </div>
+        <div class="text-2xl font-extrabold text-sky-400">28.6%</div>
+        <div class="text-xs text-slate-500 mt-1">of evaluated controls</div>
+      </div>
+
+      <!-- Failed -->
+      <div class="bg-slate-900 border border-rose-900/30 rounded-xl p-4 shadow-sm hover:border-rose-700/50 transition">
+        <div class="text-rose-400 text-xs font-medium uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>Failed</span>
+          <i class="fa-solid fa-circle-xmark text-rose-500"></i>
+        </div>
+        <div class="text-2xl font-extrabold text-rose-400">5</div>
+        <div class="text-xs text-rose-500/80 mt-1">Immediate action needed</div>
+      </div>
+
+      <!-- Errors -->
+      <div class="bg-slate-900 border border-amber-900/30 rounded-xl p-4 shadow-sm hover:border-amber-700/50 transition">
+        <div class="text-amber-400 text-xs font-medium uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>Errors</span>
+          <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+        </div>
+        <div class="text-2xl font-extrabold text-amber-400">16</div>
+        <div class="text-xs text-amber-500/80 mt-1">Permission denied</div>
+      </div>
+
+      <!-- Passed -->
+      <div class="bg-slate-900 border border-emerald-900/30 rounded-xl p-4 shadow-sm hover:border-emerald-700/50 transition">
+        <div class="text-emerald-400 text-xs font-medium uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>Passed</span>
+          <i class="fa-solid fa-circle-check text-emerald-500"></i>
+        </div>
+        <div class="text-2xl font-extrabold text-emerald-400">2</div>
+        <div class="text-xs text-emerald-500/80 mt-1">Compliant controls</div>
+      </div>
+
+      <!-- Manual & N/A -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition">
+        <div class="text-purple-400 text-xs font-medium uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>Manual / N/A</span>
+          <i class="fa-solid fa-eye text-purple-400"></i>
+        </div>
+        <div class="text-2xl font-extrabold text-purple-300">4</div>
+        <div class="text-xs text-slate-500 mt-1">1 Manual, 3 N/A</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Status Donut Chart -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-slate-200">Status Distribution</h2>
+          <span class="text-xs text-slate-500">Breakdown</span>
+        </div>
+        <div class="relative h-60 flex items-center justify-center">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Regional Breakdown Bar Chart -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-200">Multi-Region Access Analyzer (Control 2.18)</h2>
+            <p class="text-xs text-slate-400">Status across 17 audited AWS regions</p>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400">17 Regions</span>
+        </div>
+        <div class="relative h-60">
+          <canvas id="regionChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Findings Table Section -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
+      <!-- Filter Bar & Search -->
+      <div class="p-5 border-b border-slate-800 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold text-white">Detailed Audit Findings</h2>
+            <p class="text-xs text-slate-400">Click any row to inspect technical evidence and remediation</p>
+          </div>
+          
+          <!-- Search input -->
+          <div class="relative w-full md:w-80">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-xs"></i>
+            <input 
+              type="text" 
+              id="searchInput" 
+              placeholder="Search by ID, title, region, or message..." 
+              oninput="applyFilter()"
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <span class="text-slate-400 font-medium mr-1">Filter by Status:</span>
+          <button onclick="setStatusFilter('ALL')" id="chip-ALL" class="filter-chip px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition shadow-sm">All (27)</button>
+          <button onclick="setStatusFilter('FAIL')" id="chip-FAIL" class="filter-chip px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">Fail (5)</button>
+          <button onclick="setStatusFilter('ERROR')" id="chip-ERROR" class="filter-chip px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">Error (16)</button>
+          <button onclick="setStatusFilter('PASS')" id="chip-PASS" class="filter-chip px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">Pass (2)</button>
+          <button onclick="setStatusFilter('MANUAL')" id="chip-MANUAL" class="filter-chip px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">Manual (1)</button>
+          <button onclick="setStatusFilter('NOT_APPLICABLE')" id="chip-NOT_APPLICABLE" class="filter-chip px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">N/A (3)</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto custom-scroll">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-950/60 text-slate-400 font-semibold border-b border-slate-800 uppercase tracking-wider text-[11px]">
+              <th class="py-3 px-4 w-20">Control</th>
+              <th class="py-3 px-4 w-28">Status</th>
+              <th class="py-3 px-4 w-20">Severity</th>
+              <th class="py-3 px-4 w-28">Region</th>
+              <th class="py-3 px-4">Title & Message</th>
+              <th class="py-3 px-4 w-28 text-right">Details</th>
+            </tr>
+          </thead>
+          <tbody id="findingsTableBody" class="divide-y divide-slate-800/60 font-normal">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="hidden py-12 text-center text-slate-500">
+        <i class="fa-regular fa-folder-open text-3xl mb-2 text-slate-600"></i>
+        <p class="text-sm">No findings matched your search or filter.</p>
+      </div>
+
+      <div class="p-4 border-t border-slate-800/80 bg-slate-950/40 text-xs text-slate-500 flex justify-between items-center">
+        <span id="showingCount">Showing 27 findings</span>
+        <span>Source: <code>audit-report.json</code></span>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+    <p>AWS IAM Security Audit Visualizer • Generated on 2026-11-09 23:36:50</p>
+  </footer>
+
+  <script>
+    const reportData = [{"control_id": "2.4", "title": "Root account has no access key", "service": "IAM", "region": "global", "resource_id": "account", "status": "PASS", "severity": "MEDIUM", "evidence": {"active_root_access_keys": []}, "message": "Root has no active access keys.", "remediation": null, "checked_at": "2026-11-09T12:49:30.171956+00:00"}, {"control_id": "2.5", "title": "Root account has MFA enabled", "service": "IAM", "region": "global", "resource_id": "account", "status": "FAIL", "severity": "HIGH", "evidence": {"mfa_active": "false"}, "message": "Root MFA is not enabled.", "remediation": "Enable MFA for the root account manually.", "checked_at": "2026-11-09T12:49:30.171974+00:00"}, {"control_id": "2.10", "title": "IAM console users have MFA", "service": "IAM", "region": "global", "resource_id": "account", "status": "NOT_APPLICABLE", "severity": "MEDIUM", "evidence": {"console_user_count": 0}, "message": "No IAM users with console passwords were found.", "remediation": null, "checked_at": "2026-11-09T12:49:30.171981+00:00"}, {"control_id": "2.11", "title": "Unused credentials are disabled after 45 days", "service": "IAM", "region": "global", "resource_id": "account", "status": "PASS", "severity": "MEDIUM", "evidence": {"age_days": 45, "violations": []}, "message": "No stale active credentials were found.", "remediation": null, "checked_at": "2026-11-09T12:49:30.171994+00:00"}, {"control_id": "2.12", "title": "Access keys rotate within 90 days", "service": "IAM", "region": "global", "resource_id": "account", "status": "NOT_APPLICABLE", "severity": "MEDIUM", "evidence": {"active_key_count": 0}, "message": "No active IAM access keys were found.", "remediation": null, "checked_at": "2026-11-09T12:49:30.172004+00:00"}, {"control_id": "2.8", "title": "IAM password policy requires at least 14 characters", "service": "IAM", "region": "global", "resource_id": "account", "status": "FAIL", "severity": "MEDIUM", "evidence": {"password_policy": "not_found"}, "message": "No IAM password policy exists.", "remediation": null, "checked_at": "2026-11-09T12:49:30.454696+00:00"}, {"control_id": "2.9", "title": "IAM password policy prevents password reuse", "service": "IAM", "region": "global", "resource_id": "account", "status": "FAIL", "severity": "MEDIUM", "evidence": {"password_policy": "not_found"}, "message": "No IAM password policy exists.", "remediation": null, "checked_at": "2026-11-09T12:49:30.454712+00:00"}, {"control_id": "2.7", "title": "Root is not used for daily or administrative work", "service": "IAM", "region": "global", "resource_id": "account", "status": "MANUAL", "severity": "MEDIUM", "evidence": {"lookback_days": 90, "root_event_count": 0, "event_names": []}, "message": "Review CloudTrail root activity and decide whether each event was approved.", "remediation": "Stop routine root use and document any approved break-glass use.", "checked_at": "2026-11-09T12:49:31.388395+00:00"}, {"control_id": "2.13", "title": "IAM users receive permissions through groups", "service": "IAM", "region": "global", "resource_id": "account", "status": "NOT_APPLICABLE", "severity": "MEDIUM", "evidence": {"user_count": 0}, "message": "No IAM users were found.", "remediation": null, "checked_at": "2026-11-09T12:49:31.674965+00:00"}, {"control_id": "2.14", "title": "No IAM policy grants unrestricted *:* access", "service": "IAM", "region": "global", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "ClientError", "error": "An error occurred (AccessDenied) when calling the ListRolePolicies operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: iam:ListRolePolicies on resource: role vocareum with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-4k9hyl7p. Go to https://us-east-1.console.aws.amazon.com/iam/home?region=us-east-1#/authorization-details/aw0k2lgtn4np994edfa3k1lq3 for complete details, or call the GetRequestAuthorizationDetails API with the following authorization id: aw0k2lgtn4np994edfa3k1lq3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:49:45.652430+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ap-south-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-south-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:49:48.737544+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "eu-north-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-north-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:49:50.718112+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "eu-west-3", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-west-3:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:49:54.162417+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "eu-west-2", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-west-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:49:55.449003+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "eu-west-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-west-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:49:58.351461+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ap-northeast-3", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-northeast-3:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:00.829660+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ap-northeast-2", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-northeast-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:02.414037+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ap-northeast-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-northeast-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:03.306598+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ca-central-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ca-central-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:04.701351+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "sa-east-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:sa-east-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:06.449792+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ap-southeast-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-southeast-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:07.063289+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "ap-southeast-2", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:ap-southeast-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:11.079365+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "eu-central-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:eu-central-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:15.129570+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "us-east-1", "resource_id": "account", "status": "FAIL", "severity": "MEDIUM", "evidence": {"analyzers": []}, "message": "No active Access Analyzer exists in this Region.", "remediation": "Create and activate an account Access Analyzer after approval.", "checked_at": "2026-11-09T12:50:16.456591+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "us-east-2", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:us-east-2:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:20.131968+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "us-west-1", "resource_id": "account", "status": "ERROR", "severity": "MEDIUM", "evidence": {"error_type": "AccessDeniedException", "error": "An error occurred (AccessDeniedException) when calling the ListAnalyzers operation: User: arn:aws:sts::884159967574:assumed-role/voclabs/user5048465=24521831@gm.uit.edu.vn is not authorized to perform: access-analyzer:ListAnalyzers on resource: arn:aws:access-analyzer:us-west-1:884159967574:* with an explicit deny in a service control policy: arn:aws:organizations::641046538913:policy/o-90aas9opav/service_control_policy/p-9gscqxg3"}, "message": "The control could not be checked.", "remediation": null, "checked_at": "2026-11-09T12:50:23.728235+00:00"}, {"control_id": "2.18", "title": "IAM External Access Analyzer is active in every enabled Region", "service": "IAM", "region": "us-west-2", "resource_id": "account", "status": "FAIL", "severity": "MEDIUM", "evidence": {"analyzers": []}, "message": "No active Access Analyzer exists in this Region.", "remediation": "Create and activate an account Access Analyzer after approval.", "checked_at": "2026-11-09T12:50:24.891958+00:00"}];
+    const reportMetrics = {"total": 27, "pass": 2, "fail": 5, "error": 16, "manual": 1, "na": 3, "compliance_score": 28.6, "status_counts": {"PASS": 2, "FAIL": 5, "NOT_APPLICABLE": 3, "MANUAL": 1, "ERROR": 16}, "severity_counts": {"MEDIUM": 26, "HIGH": 1}, "region_counts": {"global": 10, "ap-south-1": 1, "eu-north-1": 1, "eu-west-3": 1, "eu-west-2": 1, "eu-west-1": 1, "ap-northeast-3": 1, "ap-northeast-2": 1, "ap-northeast-1": 1, "ca-central-1": 1, "sa-east-1": 1, "ap-southeast-1": 1, "ap-southeast-2": 1, "eu-central-1": 1, "us-east-1": 1, "us-east-2": 1, "us-west-1": 1, "us-west-2": 1}};
+    let currentStatusFilter = 'ALL';
+
+    const statusBadgeStyles = {
+      'PASS': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+      'FAIL': 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+      'ERROR': 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+      'MANUAL': 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+      'NOT_APPLICABLE': 'bg-slate-700/30 text-slate-400 border border-slate-700/50'
+    };
+
+    const severityBadgeStyles = {
+      'HIGH': 'text-rose-400 font-semibold',
+      'MEDIUM': 'text-amber-400 font-medium',
+      'LOW': 'text-slate-400'
+    };
+
+    function renderTable() {
+      const tbody = document.getElementById('findingsTableBody');
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const emptyState = document.getElementById('emptyState');
+      tbody.innerHTML = '';
+
+      let matchedCount = 0;
+
+      reportData.forEach((item, index) => {
+        const matchesStatus = (currentStatusFilter === 'ALL' || item.status === currentStatusFilter);
+        const matchesSearch = !search || 
+          (item.control_id && item.control_id.toLowerCase().includes(search)) ||
+          (item.title && item.title.toLowerCase().includes(search)) ||
+          (item.region && item.region.toLowerCase().includes(search)) ||
+          (item.message && item.message.toLowerCase().includes(search));
+
+        if (!matchesStatus || !matchesSearch) return;
+
+        matchedCount++;
+        const badgeClass = statusBadgeStyles[item.status] || 'bg-slate-800 text-slate-300';
+        const sevClass = severityBadgeStyles[item.severity] || 'text-slate-400';
+        const rowId = `finding-${index}`;
+        const detailId = `detail-${index}`;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-850/80 cursor-pointer transition';
+        tr.onclick = () => toggleDetail(detailId, `chevron-${index}`);
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono font-bold text-indigo-400">${item.control_id}</td>
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${badgeClass}">
+              ${item.status}
+            </span>
+          </td>
+          <td class="py-3 px-4 ${sevClass}">${item.severity}</td>
+          <td class="py-3 px-4 font-mono text-slate-300">${item.region}</td>
+          <td class="py-3 px-4">
+            <div class="font-medium text-slate-200">${item.title}</div>
+            <div class="text-[11px] text-slate-400 truncate max-w-xl">${item.message || 'No additional message'}</div>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <i id="chevron-${index}" class="fa-solid fa-chevron-down text-slate-500 transition-transform duration-200"></i>
+          </td>
+        `;
+
+        const detailTr = document.createElement('tr');
+        detailTr.id = detailId;
+        detailTr.className = 'hidden bg-slate-950/70 border-b border-slate-800';
+        detailTr.innerHTML = `
+          <td colspan="6" class="p-5 space-y-4">
+            ${item.remediation ? `
+              <div class="bg-rose-950/30 border border-rose-900/50 rounded-lg p-3.5 text-xs">
+                <span class="font-semibold text-rose-400 flex items-center gap-1.5 mb-1">
+                  <i class="fa-solid fa-wrench"></i> Suggested Remediation:
+                </span>
+                <p class="text-slate-300">${item.remediation}</p>
+              </div>
+            ` : ''}
+
+            <div class="space-y-1.5">
+              <span class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-code text-indigo-400"></i> Technical Evidence & Context:
+              </span>
+              <pre class="bg-slate-900 border border-slate-800 text-slate-300 p-3 rounded-lg overflow-x-auto text-[11px] custom-scroll"><code>${JSON.stringify(item.evidence || {}, null, 2)}</code></pre>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <span>Resource ID: <code class="text-slate-400">${item.resource_id}</code></span>
+              <span>Checked At: ${item.checked_at}</span>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+        tbody.appendChild(detailTr);
+      });
+
+      document.getElementById('showingCount').textContent = `Showing ${matchedCount} of ${reportData.length} findings`;
+      if (matchedCount === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    function toggleDetail(detailId, chevronId) {
+      const detailEl = document.getElementById(detailId);
+      const chevronEl = document.getElementById(chevronId);
+      if (detailEl.classList.contains('hidden')) {
+        detailEl.classList.remove('hidden');
+        chevronEl.style.transform = 'rotate(180deg)';
+      } else {
+        detailEl.classList.add('hidden');
+        chevronEl.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function setStatusFilter(status) {
+      currentStatusFilter = status;
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.className = 'filter-chip px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition';
+      });
+      const activeChip = document.getElementById(`chip-${status}`);
+      if (activeChip) {
+        activeChip.className = 'filter-chip px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition shadow-sm';
+      }
+      renderTable();
+    }
+
+    function applyFilter() {
+      renderTable();
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'audit-report-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Initialize Chart.js Charts
+    function initCharts() {
+      // Status Donut
+      const statusCounts = reportMetrics.status_counts;
+      const statusLabels = Object.keys(statusCounts);
+      const statusData = Object.values(statusCounts);
+      const statusColors = statusLabels.map(s => {
+        if (s === 'PASS') return '#10b981';
+        if (s === 'FAIL') return '#ef4444';
+        if (s === 'ERROR') return '#f59e0b';
+        if (s === 'MANUAL') return '#8b5cf6';
+        return '#64748b';
+      });
+
+      new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: statusLabels,
+          datasets: [{
+            data: statusData,
+            backgroundColor: statusColors,
+            borderColor: '#0f172a',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // Regional Access Analyzer Breakdown
+      const regionFindings = reportData.filter(d => d.control_id === '2.18');
+      const regions = [...new Set(regionFindings.map(d => d.region))];
+      
+      const regionPass = [];
+      const regionFail = [];
+      const regionError = [];
+
+      regions.forEach(r => {
+        const items = regionFindings.filter(d => d.region === r);
+        regionPass.push(items.filter(d => d.status === 'PASS').length);
+        regionFail.push(items.filter(d => d.status === 'FAIL').length);
+        regionError.push(items.filter(d => d.status === 'ERROR').length);
+      });
+
+      new Chart(document.getElementById('regionChart'), {
+        type: 'bar',
+        data: {
+          labels: regions,
+          datasets: [
+            { label: 'Fail (Disabled)', data: regionFail, backgroundColor: '#ef4444' },
+            { label: 'Error (Denied/Unreachable)', data: regionError, backgroundColor: '#f59e0b' },
+            { label: 'Pass (Active)', data: regionPass, backgroundColor: '#10b981' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: true,
+              ticks: { color: '#64748b', font: { size: 10 }, maxRotation: 45 },
+              grid: { display: false }
+            },
+            y: {
+              stacked: true,
+              ticks: { color: '#64748b', precision: 0 },
+              grid: { color: '#1e293b' }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTable();
+      initCharts();
+    });
+  </script>
+</body>
+</html>

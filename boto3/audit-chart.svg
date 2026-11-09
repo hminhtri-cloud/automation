@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" width="100%" height="360" style="background: #0f172a; border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <style>
+    .title { fill: #f8fafc; font-size: 18px; font-weight: bold; }
+    .subtitle { fill: #94a3b8; font-size: 13px; }
+    .label { fill: #cbd5e1; font-size: 13px; font-weight: 500; }
+    .val { fill: #ffffff; font-size: 13px; font-weight: bold; }
+    .bar-bg { fill: #1e293b; rx: 6px; }
+    .stat-box { fill: #1e293b; rx: 8px; stroke: #334155; stroke-width: 1px; }
+    .stat-num { font-size: 24px; font-weight: 800; }
+    .stat-lbl { fill: #94a3b8; font-size: 12px; font-weight: 500; text-transform: uppercase; }
+  </style>
+
+  <!-- Header -->
+  <text x="30" y="42" class="title">AWS IAM Security Audit Overview</text>
+  <text x="30" y="65" class="subtitle">CIS AWS Foundations Benchmark Controls • Total Findings: 27</text>
+
+  <!-- Metric Badges -->
+  <g transform="translate(30, 85)">
+    <!-- Score -->
+    <rect x="0" y="0" width="130" height="65" class="stat-box" />
+    <text x="15" y="32" class="stat-num" fill="#38bdf8">28.6%</text>
+    <text x="15" y="52" class="stat-lbl">Actionable Pass</text>
+
+    <!-- Failed -->
+    <rect x="150" y="0" width="130" height="65" class="stat-box" />
+    <text x="165" y="32" class="stat-num" fill="#f87171">5</text>
+    <text x="165" y="52" class="stat-lbl">Failed Controls</text>
+
+    <!-- Errors -->
+    <rect x="300" y="0" width="130" height="65" class="stat-box" />
+    <text x="315" y="32" class="stat-num" fill="#fb923c">16</text>
+    <text x="315" y="52" class="stat-lbl">Permission Errors</text>
+
+    <!-- Passed -->
+    <rect x="450" y="0" width="130" height="65" class="stat-box" />
+    <text x="465" y="32" class="stat-num" fill="#4ade80">2</text>
+    <text x="465" y="52" class="stat-lbl">Passed</text>
+
+    <!-- N/A & Manual -->
+    <rect x="600" y="0" width="140" height="65" class="stat-box" />
+    <text x="615" y="32" class="stat-num" fill="#a78bfa">4</text>
+    <text x="615" y="52" class="stat-lbl">N/A & Manual</text>
+  </g>
+
+  <!-- Progress Bar Breakdown -->
+  <g transform="translate(30, 185)">
+    <text x="0" y="0" class="label" font-size="14">Findings Distribution</text>
+    
+    <!-- Full bar background -->
+    <rect x="0" y="15" width="740" height="24" rx="12" fill="#1e293b" />
+    <g>
+      <!-- PASS -->
+      <rect x="0" y="15" width="55" height="24" rx="6" fill="#10b981" />
+      <!-- FAIL -->
+      <rect x="55" y="15" width="137" height="24" rx="6" fill="#ef4444" />
+      <!-- ERROR -->
+      <rect x="192" y="15" width="439" height="24" rx="6" fill="#f59e0b" />
+      <!-- MANUAL -->
+      <rect x="630" y="15" width="27" height="24" rx="6" fill="#8b5cf6" />
+      <!-- NA -->
+      <rect x="658" y="15" width="82" height="24" rx="6" fill="#64748b" />
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(30, 260)">
+    <!-- Pass -->
+    <circle cx="10" cy="10" r="7" fill="#10b981" />
+    <text x="25" y="15" class="label">PASS (2)</text>
+
+    <!-- Fail -->
+    <circle cx="140" cy="10" r="7" fill="#ef4444" />
+    <text x="155" y="15" class="label">FAIL (5)</text>
+
+    <!-- Error -->
+    <circle cx="270" cy="10" r="7" fill="#f59e0b" />
+    <text x="285" y="15" class="label">ERROR (16)</text>
+
+    <!-- Manual -->
+    <circle cx="410" cy="10" r="7" fill="#8b5cf6" />
+    <text x="425" y="15" class="label">MANUAL (1)</text>
+
+    <!-- N/A -->
+    <circle cx="560" cy="10" r="7" fill="#64748b" />
+    <text x="575" y="15" class="label">N/A (3)</text>
+  </g>
+
+  <!-- Footer note -->
+  <text x="30" y="325" fill="#64748b" font-size="11">Generated at 2026-11-09 23:36:50 • Source: audit-report.json</text>
+</svg>

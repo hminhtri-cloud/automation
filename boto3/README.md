@@ -32,4 +32,23 @@ reported as `ERROR` because the policy contents cannot be verified.
 Control 2.7 is always `MANUAL` after collecting CloudTrail evidence because an
 automated check cannot decide whether a root event was an approved break-glass
 operation.  The default CloudTrail lookback is 90 days.
-# automation
+
+## Visualizing Audit Reports
+
+You can visualize the JSON audit results using `visualize.py` (no external pip dependencies required):
+
+```bash
+# Generate interactive HTML dashboard and SVG chart
+python visualize.py --input audit-report.json
+
+# Open the HTML dashboard directly in your default browser
+python visualize.py --open
+
+# Run a local web server to host the dashboard
+python visualize.py --serve --port 8000
+```
+
+Outputs generated:
+- `audit-report.html`: Modern, responsive interactive web dashboard with filters, search, Chart.js charts, remediation details, and JSON evidence viewer.
+- `audit-chart.svg`: Standalone vector chart suitable for embedding into markdown, docs, or presentations.
+
